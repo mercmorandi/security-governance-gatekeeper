@@ -1,0 +1,26 @@
+# ===========================================
+# Role Policies Configuration
+# ===========================================
+# This file defines the security policies for each user role.
+# Policies can be overridden via environment variables:
+#   ROLE_<ROLE_NAME>_PII_REDACTION_ENABLED=true/false
+#   ROLE_<ROLE_NAME>_REQUESTS_PER_HOUR=<number>
+
+roles:
+  # ===========================================
+  # ADMIN Role
+  # ===========================================
+  # Full access: sees raw PII, no rate limiting
+  admin:
+    pii_redaction_enabled: false
+    rate_limit: null
+
+  # ===========================================
+  # JUNIOR_INTERN Role
+  # ===========================================
+  # Restricted: PII is redacted, limited to 10 requests/hour
+  junior_intern:
+    pii_redaction_enabled: true
+    rate_limit:
+      requests_per_hour: 10
+      window_seconds: 3600

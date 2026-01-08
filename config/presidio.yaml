@@ -1,0 +1,173 @@
+# Presidio Configuration
+# Supports English and Italian language models with custom Italian recognizers
+
+# General Analyzer Configuration
+supported_languages:
+  - en
+  - it
+default_score_threshold: 0.3
+
+# Recognizer Registry Configuration
+recognizer_registry:
+  supported_languages:
+    - en
+    - it
+  global_regex_flags: 26 # DOTALL | MULTILINE
+
+  recognizers:
+    # NLP recognizers (required to avoid warnings)
+    - name: SpacyRecognizer
+      supported_languages:
+        - language: en
+        - language: it
+      type: predefined
+
+    # Essential recognizers only
+    - name: EmailRecognizer
+      supported_languages:
+        - language: en
+          context:
+            - email
+            - mail
+            - address
+        - language: it
+          context:
+            - email
+            - mail
+            - posta
+            - elettronica
+      type: predefined
+
+    - name: PhoneRecognizer
+      supported_languages:
+        - language: en
+          context:
+            - phone
+            - number
+            - telephone
+            - mobile
+            - cell
+        - language: it
+          context:
+            - telefono
+            - numero
+            - cellulare
+            - mobile
+      type: predefined
+
+    # Date recognizers  
+    - name: DateRecognizer
+      supported_languages:
+        - language: en
+          context:
+            - date
+            - born
+            - birth
+            - birthday
+            - birthdate
+            - dob
+        - language: it
+          context:
+            - data
+            - nato
+            - nascita
+            - compleanno
+            - nascita
+      type: predefined
+
+    # Custom recognizers for addresses and dates
+    - name: EnglishAddress
+      supported_language: en
+      supported_entity: LOCATION
+      patterns:
+        - name: us_address
+          regex: (?i)\b\d+\s+[a-zA-Z\s]+(?:street|st|avenue|ave|road|rd|boulevard|blvd|lane|ln|drive|dr|way|court|ct|place|pl)\b
+          score: 0.8
+      context:
+        - address
+        - street
+        - avenue
+        - road
+        - lives
+        - resides
+
+    - name: ZipCode
+      supported_languages:
+        - language: en
+        - language: it
+      supported_entity: LOCATION
+      patterns:
+        - name: us_zip
+          regex: \b\d{5}(?:-\d{4})?\b
+          score: 0.7
+        - name: italian_cap
+          regex: \b\d{5}\b
+          score: 0.7
+      context:
+        - zip
+        - zipcode
+        - cap
+        - codice
+        - postale
+
+    # Custom Italian recognizers
+    - name: ItalianFiscalCode
+      supported_language: it
+      supported_entity: IT_FISCAL_CODE
+      patterns:
+        - name: codice_fiscale
+          regex: \b[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]\b
+          score: 0.85
+      context:
+        - codice
+        - fiscale
+        - cf
+
+    # Italian Address recognizer
+    - name: ItalianAddress
+      supported_language: it
+      supported_entity: LOCATION
+      patterns:
+        - name: italian_street
+          regex: (?i)\b(?:via|viale|corso|piazza|largo|vicolo|piazzale|strada)\s+[a-zA-Zàáâäèéêëìíîïòóôöùúûü'\s]+\s*\d+(?:/[a-zA-Z0-9]+)?
+          score: 0.8
+      context:
+        - indirizzo
+        - via
+        - viale
+        - corso
+        - piazza
+        - abita
+        - risiede
+
+# NLP Engine Configuration
+nlp_configuration:
+  nlp_engine_name: spacy
+  models:
+    - lang_code: en
+      model_name: en_core_web_sm
+    - lang_code: it
+      model_name: it_core_news_sm
+  ner_model_configuration:
+    labels_to_ignore:
+      - O
+      - CARDINAL
+      - FAC
+      - DATE
+      - TIME
+      - ORDINAL
+      - QUANTITY
+      - MONEY
+      - PERCENT
+    model_to_presidio_entity_mapping:
+      PER: PERSON
+      PERSON: PERSON
+      LOC: LOCATION
+      LOCATION: LOCATION
+      GPE: LOCATION
+      ORG: ORGANIZATION
+      ORGANIZATION: ORGANIZATION
+      MISC: PERSON
+      DATE: DATE_TIME
+    low_score_entity_names:
+      - PERSON
